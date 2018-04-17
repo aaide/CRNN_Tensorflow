@@ -19,6 +19,10 @@ try:
 except ImportError:
     pass
 
+from sys import path
+from os import getcwd
+path.append(getcwd())
+
 from crnn_model import crnn_model
 from global_configuration import config
 from local_utils import log_utils, data_utils

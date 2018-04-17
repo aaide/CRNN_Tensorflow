@@ -15,8 +15,13 @@ import argparse
 import numpy as np
 import math
 
-from local_utils import data_utils
+from sys import path
+from os import getcwd
+path.append(getcwd())
+
 from crnn_model import crnn_model
+# import CRNN_Tensorflow.crnn_model.crnn_model
+from local_utils import data_utils
 from global_configuration import config
 
 
