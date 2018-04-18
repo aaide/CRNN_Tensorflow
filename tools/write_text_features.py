@@ -18,9 +18,12 @@ try:
 except ImportError:
     pass
 
+from sys import path
+from os import getcwd
+path.append(getcwd())
+
 from data_provider import data_provider
 from local_utils import data_utils
-
 
 def init_args():
     """
