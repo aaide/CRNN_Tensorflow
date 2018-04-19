@@ -2,5 +2,7 @@ For OCR on single image
 python tools\demo_shadownet.py --weights_path model\shadownet\shadownet_2017-10-17-11-47-46.ckpt-199999 --image_path data\...
 
 For converting data to tf-records
-python tools/write_text_features.py --dataset_dir out --save_dir data
+python tools\write_text_features.py --dataset_dir out --save_dir data
 
+For training
+python tools\train_shadownet.py --dataset_dir data\
