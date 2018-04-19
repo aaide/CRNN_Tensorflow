@@ -15,6 +15,10 @@ import time
 import numpy as np
 import argparse
 
+from sys import path
+from os import getcwd
+path.append(getcwd())
+
 from crnn_model import crnn_model
 from local_utils import data_utils, log_utils
 from global_configuration import config

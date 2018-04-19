@@ -49,7 +49,7 @@ def write_features(dataset_dir, save_dir):
 
     print('Initialize the dataset provider ......')
     provider = data_provider.TextDataProvider(dataset_dir=dataset_dir, annotation_name='sample.txt',
-                                              validation_set=True, validation_split=0.15, shuffle='every_epoch',
+                                              validation_set=False, validation_split=0.15, shuffle='every_epoch',
                                               normalization=None)
     print('Dataset provider intialize complete')
 

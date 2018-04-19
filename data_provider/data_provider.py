@@ -11,7 +11,9 @@ Provide the training and testing data for shadow net
 import os.path as ops
 import numpy as np
 import copy
+import os
 import cv2
+
 try:
     from cv2 import cv2
 except ImportError:
@@ -24,6 +26,7 @@ class TextDataset(base_data_provider.Dataset):
     """
         Implement a dataset class providing the image and it's corresponding text
     """
+
     def __init__(self, images, labels, imagenames, shuffle=None, normalization=None):
         """
 
@@ -131,6 +134,7 @@ class TextDataProvider(object):
     """
         Implement the text data provider for training and testing the shadow net
     """
+
     def __init__(self, dataset_dir, annotation_name, validation_set=None, validation_split=None, shuffle=None,
                  normalization=None):
         """
@@ -167,8 +171,12 @@ class TextDataProvider(object):
 
         with open(test_anno_path, 'r') as anno_file:
             info = np.array([tmp.strip().split() for tmp in anno_file.readlines()])
-            test_images = np.array([cv2.imread(ops.join(self.__test_dataset_dir, tmp), cv2.IMREAD_COLOR)
-                                   for tmp in info[:, 0]])
+
+            test_images_org = [cv2.imread(ops.join(self.__test_dataset_dir, tmp), cv2.IMREAD_COLOR)
+                               for tmp in info[:, 0]]
+            test_images = np.array([cv2.resize(tmp, (100, 32)) for tmp in test_images_org])
+
+
             test_labels = np.array([tmp for tmp in info[:, 1]])
 
             test_imagenames = np.array([ops.basename(tmp) for tmp in info[:, 0]])
@@ -183,8 +191,11 @@ class TextDataProvider(object):
 
         with open(train_anno_path, 'r') as anno_file:
             info = np.array([tmp.strip().split() for tmp in anno_file.readlines()])
-            train_images = np.array([cv2.imread(ops.join(self.__train_dataset_dir, tmp), cv2.IMREAD_COLOR)
-                                    for tmp in info[:, 0]])
+
+            train_images_org = [cv2.imread(ops.join(self.__train_dataset_dir, tmp), cv2.IMREAD_COLOR)
+                                     for tmp in info[:, 0]]
+            train_images = np.array([cv2.resize(tmp,(100,32)) for tmp in train_images_org])
+
             train_labels = np.array([tmp for tmp in info[:, 1]])
             train_imagenames = np.array([ops.basename(tmp) for tmp in info[:, 0]])
 
@@ -206,7 +217,7 @@ class TextDataProvider(object):
         return
 
     def __str__(self):
-        provider_info = 'Dataset_dir: {:s} contain training images: {:d} validation images: {:d} testing images: {:d}'.\
+        provider_info = 'Dataset_dir: {:s} contain training images: {:d} validation images: {:d} testing images: {:d}'. \
             format(self.__dataset_dir, self.train.num_examples, self.validation.num_examples, self.test.num_examples)
         return provider_info
 
