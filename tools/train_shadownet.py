@@ -10,7 +10,7 @@ Train shadow net script
 """
 import os
 
-os.environ['TF_CPP_MIN_VLOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_VLOG_LEVEL'] = '0'
 import tensorflow as tf
 import os.path as ops
 import time
@@ -19,7 +19,6 @@ import argparse
 
 from sys import path
 from os import getcwd
-
 path.append(getcwd())
 
 from crnn_model import crnn_model
@@ -59,7 +58,7 @@ def train_shadownet(dataset_dir, weights_path=None):
     inputdata = tf.cast(x=inputdata, dtype=tf.float32)
 
     # initializa the net model
-    shadownet = crnn_model.ShadowNet(phase='Train', hidden_nums=256, layers_nums=2, seq_length=25, num_classes=45)
+    shadownet = crnn_model.ShadowNet(phase='Train', hidden_nums=256, layers_nums=2, seq_length=25, num_classes=46)
 
     with tf.variable_scope('shadow', reuse=False):
         net_out = shadownet.build_shadownet(inputdata=inputdata)
