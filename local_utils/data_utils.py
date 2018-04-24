@@ -21,6 +21,7 @@ class FeatureIO(object):
     """
         Implement the base writer class
     """
+
     def __init__(self, char_dict_path=ops.join(os.getcwd(), 'data/char_dict/char_dict.json'),
                  ord_map_dict_path=ops.join(os.getcwd(), 'data/char_dict/ord_map.json')):
         self.__char_list = establish_char_dict.CharDictBuilder.read_char_dict(char_dict_path)
@@ -117,7 +118,7 @@ class FeatureIO(object):
         else:
             return self.__char_list[str(number)]
 
-    def encode_labels(self, labels):
+    def encode_labels(self, labels, debug=False):
         """
             encode the labels for ctc loss
         :param labels:
@@ -129,6 +130,11 @@ class FeatureIO(object):
             encode_label = [self.char_to_int(char) for char in label]
             encoded_labeles.append(encode_label)
             lengths.append(len(label))
+
+        if debug:
+            print("Labels:",sorted(list(set((label for word in labels for label in word)))))
+            print("Encoded Labels:",list(set((label for word in encoded_labeles for label in word))))
+
         return encoded_labeles, lengths
 
     def sparse_tensor_to_str(self, spares_tensor: tf.SparseTensor):
@@ -157,11 +163,12 @@ class TextFeatureWriter(FeatureIO):
     """
         Implement the crnn feature writer
     """
+
     def __init__(self):
         super(TextFeatureWriter, self).__init__()
         return
 
-    def write_features(self, tfrecords_path, labels, images, imagenames):
+    def write_features(self, tfrecords_path, labels, images, imagenames, debug=False):
         """
 
         :param tfrecords_path:
@@ -172,7 +179,7 @@ class TextFeatureWriter(FeatureIO):
         """
         assert len(labels) == len(images) == len(imagenames)
 
-        labels, length = self.encode_labels(labels)
+        labels, length = self.encode_labels(labels, debug)
 
         if not ops.exists(ops.split(tfrecords_path)[0]):
             os.makedirs(ops.split(tfrecords_path)[0])
@@ -186,7 +193,8 @@ class TextFeatureWriter(FeatureIO):
                 })
                 example = tf.train.Example(features=features)
                 writer.write(example.SerializeToString())
-                sys.stdout.write('\r>>Writing {:d}/{:d} {:s} tfrecords'.format(index+1, len(images), imagenames[index]))
+                sys.stdout.write(
+                    '\r>>Writing {:d}/{:d} {:s} tfrecords'.format(index + 1, len(images), imagenames[index]))
                 sys.stdout.flush()
             sys.stdout.write('\n')
             sys.stdout.flush()
@@ -197,6 +205,7 @@ class TextFeatureReader(FeatureIO):
     """
         Implement the crnn feature reader
     """
+
     def __init__(self):
         super(TextFeatureReader, self).__init__()
         return
@@ -233,6 +242,7 @@ class TextFeatureIO(object):
     """
         Implement a crnn feture io manager
     """
+
     def __init__(self):
         """
 

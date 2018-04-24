@@ -13,6 +13,7 @@ import os.path as ops
 import argparse
 import numpy as np
 import cv2
+
 try:
     from cv2 import cv2
 except ImportError:
@@ -20,10 +21,14 @@ except ImportError:
 
 from sys import path
 from os import getcwd
+
 path.append(getcwd())
+
+debug = False
 
 from data_provider import data_provider
 from local_utils import data_utils
+
 
 def init_args():
     """
@@ -66,7 +71,7 @@ def write_features(dataset_dir, save_dir):
 
     train_tfrecord_path = ops.join(save_dir, 'train_feature.tfrecords')
     feature_io.writer.write_features(tfrecords_path=train_tfrecord_path, labels=train_labels, images=train_images,
-                                     imagenames=train_imagenames)
+                                     imagenames=train_imagenames,debug=debug)
 
     # write test tfrecords
     print('Start writing testing tf records')
@@ -79,7 +84,7 @@ def write_features(dataset_dir, save_dir):
 
     test_tfrecord_path = ops.join(save_dir, 'test_feature.tfrecords')
     feature_io.writer.write_features(tfrecords_path=test_tfrecord_path, labels=test_labels, images=test_images,
-                                     imagenames=test_imagenames)
+                                     imagenames=test_imagenames,debug=debug)
 
     # write val tfrecords
     print('Start writing validation tf records')
@@ -92,7 +97,7 @@ def write_features(dataset_dir, save_dir):
 
     val_tfrecord_path = ops.join(save_dir, 'validation_feature.tfrecords')
     feature_io.writer.write_features(tfrecords_path=val_tfrecord_path, labels=val_labels, images=val_images,
-                                     imagenames=val_imagenames)
+                                     imagenames=val_imagenames,debug=debug)
 
     return
 
