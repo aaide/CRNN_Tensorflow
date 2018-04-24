@@ -9,6 +9,8 @@
 Train shadow net script
 """
 import os
+
+os.environ['TF_CPP_MIN_VLOG_LEVEL'] = '2'
 import tensorflow as tf
 import os.path as ops
 import time
@@ -17,12 +19,12 @@ import argparse
 
 from sys import path
 from os import getcwd
+
 path.append(getcwd())
 
 from crnn_model import crnn_model
 from local_utils import data_utils, log_utils
 from global_configuration import config
-
 
 logger = log_utils.init_logger()
 
@@ -51,7 +53,8 @@ def train_shadownet(dataset_dir, weights_path=None):
     images, labels, imagenames = decoder.read_features(ops.join(dataset_dir, 'train_feature.tfrecords'),
                                                        num_epochs=None)
     inputdata, input_labels, input_imagenames = tf.train.shuffle_batch(
-        tensors=[images, labels, imagenames], batch_size=32, capacity=1000+2*32, min_after_dequeue=100, num_threads=1)
+        tensors=[images, labels, imagenames], batch_size=32, capacity=1000 + 2 * 32, min_after_dequeue=100,
+        num_threads=1)
 
     inputdata = tf.cast(x=inputdata, dtype=tf.float32)
 
@@ -61,9 +64,9 @@ def train_shadownet(dataset_dir, weights_path=None):
     with tf.variable_scope('shadow', reuse=False):
         net_out = shadownet.build_shadownet(inputdata=inputdata)
 
-    cost = tf.reduce_mean(tf.nn.ctc_loss(labels=input_labels, inputs=net_out, sequence_length=25*np.ones(32)))
+    cost = tf.reduce_mean(tf.nn.ctc_loss(labels=input_labels, inputs=net_out, sequence_length=25 * np.ones(32)))
 
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(net_out, 25*np.ones(32), merge_repeated=False)
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(net_out, 25 * np.ones(32), merge_repeated=False)
 
     sequence_dist = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), input_labels))
 
