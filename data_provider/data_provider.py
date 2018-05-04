@@ -11,9 +11,7 @@ Provide the training and testing data for shadow net
 import os.path as ops
 import numpy as np
 import copy
-import os
 import cv2
-
 try:
     from cv2 import cv2
 except ImportError:
@@ -26,7 +24,6 @@ class TextDataset(base_data_provider.Dataset):
     """
         Implement a dataset class providing the image and it's corresponding text
     """
-
     def __init__(self, images, labels, imagenames, shuffle=None, normalization=None):
         """
 
@@ -134,7 +131,6 @@ class TextDataProvider(object):
     """
         Implement the text data provider for training and testing the shadow net
     """
-
     def __init__(self, dataset_dir, annotation_name, validation_set=None, validation_split=None, shuffle=None,
                  normalization=None):
         """
@@ -217,7 +213,7 @@ class TextDataProvider(object):
         return
 
     def __str__(self):
-        provider_info = 'Dataset_dir: {:s} contain training images: {:d} validation images: {:d} testing images: {:d}'. \
+        provider_info = 'Dataset_dir: {:s} contain training images: {:d} validation images: {:d} testing images: {:d}'.\
             format(self.__dataset_dir, self.train.num_examples, self.validation.num_examples, self.test.num_examples)
         return provider_info
 
