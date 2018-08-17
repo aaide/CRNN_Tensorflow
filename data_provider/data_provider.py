@@ -157,7 +157,7 @@ class TextDataProvider(object):
         self.__train_dataset_dir = ops.join(self.__dataset_dir, 'Train')
         self.__test_dataset_dir = ops.join(self.__dataset_dir, 'Test')
 
-        assert ops.exists(dataset_dir)
+        assert ops.exists(dataset_dir), 'Missing required root data folder {:s}'.format(dataset_dir)
         assert ops.exists(self.__train_dataset_dir), 'Missing required "Train" folder in {:s}'.format(dataset_dir)
         assert ops.exists(self.__test_dataset_dir), 'Missing required "Test" folder in {:s}'.format(dataset_dir)
 

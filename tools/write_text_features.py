@@ -133,8 +133,6 @@ def write_features(dataset_dir: str, save_dir: str, annotation_name: str, valida
 if __name__ == '__main__':
     # init args
     args = init_args()
-    if not ops.exists(args.dataset_dir):
-        raise ValueError('Dataset {:s} doesn\'t exist'.format(args.dataset_dir))
 
     # write tf records
     write_features(dataset_dir=args.dataset_dir, save_dir=args.save_dir, annotation_name=args.annotation_file,
