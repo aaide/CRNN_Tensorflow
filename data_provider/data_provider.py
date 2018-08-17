@@ -22,16 +22,16 @@ from data_provider import base_data_provider
 
 class TextDataset(base_data_provider.Dataset):
     """
-        Implement a dataset class providing the image and it's corresponding text
+        Implement a dataset class providing the image and its corresponding text
     """
-    def __init__(self, images, labels, imagenames, shuffle=None, normalization=None):
+    def __init__(self, images: np.ndarray, labels: np.ndarray, imagenames: np.ndarray, shuffle: str=None, normalization: str=None):
         """
 
         :param images: image datasets [nums, H, W, C] 4D ndarray
         :param labels: label dataset [nums, :] 2D ndarray
-        :param shuffle: if need shuffle the dataset, 'once_prior_train' represent shuffle only once before training
-                        'every_epoch' represent shuffle the data every epoch
-        :param imagenames:
+        :param imagenames: image file names [nums, :] 2D ndarray
+        :param shuffle: if the dataset needs to be shuffled use 'once_prior_train' to shuffle only once before training
+                        or 'every_epoch' to shuffle the data every epoch
         :param normalization: if need do normalization to the dataset,
                               'None': no any normalization
                               'divide_255': divide all pixels by 255
@@ -131,8 +131,8 @@ class TextDataProvider(object):
     """
         Implement the text data provider for training and testing the shadow net
     """
-    def __init__(self, dataset_dir, annotation_name, validation_set=None, validation_split=None, shuffle=None,
-                 normalization=None):
+    def __init__(self, dataset_dir: str, annotation_name: str, validation_set: bool=None, validation_split: float=None,
+                 shuffle: str=None, normalization: str=None):
         """
 
         :param dataset_dir: str, where you save the dataset one class on folder
@@ -158,8 +158,8 @@ class TextDataProvider(object):
         self.__test_dataset_dir = ops.join(self.__dataset_dir, 'Test')
 
         assert ops.exists(dataset_dir)
-        assert ops.exists(self.__train_dataset_dir)
-        assert ops.exists(self.__test_dataset_dir)
+        assert ops.exists(self.__train_dataset_dir), 'Missing required "Train" folder in {:s}'.format(dataset_dir)
+        assert ops.exists(self.__test_dataset_dir), 'Missing required "Test" folder in {:s}'.format(dataset_dir)
 
         # add test dataset
         test_anno_path = ops.join(self.__test_dataset_dir, annotation_name)
@@ -213,7 +213,7 @@ class TextDataProvider(object):
         return
 
     def __str__(self):
-        provider_info = 'Dataset_dir: {:s} contain training images: {:d} validation images: {:d} testing images: {:d}'.\
+        provider_info = 'Dataset_dir: {:s} contains {:d} training images, {:d} validation images, {:d} testing images'.\
             format(self.__dataset_dir, self.train.num_examples, self.validation.num_examples, self.test.num_examples)
         return provider_info
 
