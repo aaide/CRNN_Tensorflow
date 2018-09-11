@@ -8,10 +8,8 @@
 """
 Test shadow net script
 """
-import importlib
 import os
 import os.path as ops
-import sys
 from typing import Tuple
 
 import tensorflow as tf
@@ -78,19 +76,19 @@ def test_shadownet(weights_path: str, cfg: EasyDict, visualize: bool, process_al
     # Initialize the record decoder
     decoder = data_utils.TextFeatureIO(char_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'char_dict.json'),
                                        ord_map_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'ord_map.json')).reader
-    images_t, labels_t, imagenames_t = decoder.read_features(ops.join(cfg.PATH.TFRECORDS_DIR, 'test_feature.tfrecords'),
-                                                             num_epochs=None, input_size=cfg.ARCH.INPUT_SIZE,
-                                                             input_channels=cfg.ARCH.INPUT_CHANNELS)
+    images_t, labels_t, lengths_t, imagenames_t = \
+        decoder.read_features(ops.join(cfg.PATH.TFRECORDS_DIR, 'test_feature.tfrecords'), num_epochs=None,
+                              input_size=cfg.ARCH.INPUT_SIZE, input_channels=cfg.ARCH.INPUT_CHANNELS)
     if not process_all_data:
-        images_sh, labels_sh, imagenames_sh = tf.train.shuffle_batch(tensors=[images_t, labels_t, imagenames_t],
-                                                                     batch_size=cfg.TEST.BATCH_SIZE,
-                                                                     capacity=1000 + 2*cfg.TEST.BATCH_SIZE,
-                                                                     min_after_dequeue=2, num_threads=num_threads)
+        images_sh, labels_sh, lengths_sh, imagenames_sh = \
+            tf.train.shuffle_batch(tensors=[images_t, labels_t, lengths_t, imagenames_t],
+                                   batch_size=cfg.TEST.BATCH_SIZE, capacity=1000 + 2 * cfg.TEST.BATCH_SIZE,
+                                   min_after_dequeue=2, num_threads=num_threads)
     else:
-        images_sh, labels_sh, imagenames_sh = tf.train.batch(tensors=[images_t, labels_t, imagenames_t],
-                                                             batch_size=cfg.TEST.BATCH_SIZE,
-                                                             capacity=1000 + 2 * cfg.TEST.BATCH_SIZE,
-                                                             num_threads=num_threads)
+        images_sh, labels_sh, lengths_sh, imagenames_sh = \
+            tf.train.batch(tensors=[images_t, labels_t, lengths_t, imagenames_t],
+                           batch_size=cfg.TEST.BATCH_SIZE,
+                           capacity=1000 + 2 * cfg.TEST.BATCH_SIZE, num_threads=num_threads)
 
     images_sh = tf.cast(x=images_sh, dtype=tf.float32)
 
@@ -103,9 +101,7 @@ def test_shadownet(weights_path: str, cfg: EasyDict, visualize: bool, process_al
     with tf.variable_scope('shadow'):
         net_out = net.build_shadownet(inputdata=images_sh)
 
-    decoded, _ = tf.nn.ctc_beam_search_decoder(net_out,
-                                               cfg.ARCH.SEQ_LENGTH * np.ones(cfg.TEST.BATCH_SIZE),
-                                               merge_repeated=False)
+    decoded, _ = tf.nn.ctc_beam_search_decoder(net_out, sequence_length=lengths_sh, merge_repeated=False)
 
     # config tf session
     sess_config = tf.ConfigProto()
@@ -132,7 +128,8 @@ def test_shadownet(weights_path: str, cfg: EasyDict, visualize: bool, process_al
 
         accuracy = 0
         for epoch in range(num_iterations):
-            predictions, images, labels, imagenames = sess.run([decoded, images_sh, labels_sh, imagenames_sh])
+            predictions, images, labels, _, imagenames = sess.run([decoded, images_sh, labels_sh, lengths_sh,
+                                                                   imagenames_sh])
             imagenames = np.reshape(imagenames, newshape=imagenames.shape[0])
             imagenames = [tmp.decode('utf-8') for tmp in imagenames]
 

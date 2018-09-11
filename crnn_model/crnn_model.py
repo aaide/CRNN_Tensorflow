@@ -103,7 +103,7 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
         """ Implements the map to sequence part of the network.
 
         This is used to convert the CNN feature map to the sequence used in the stacked LSTM layers later on.
-        Note that this determines the lenght of the sequences that the LSTM expects
+        Note that this determines the length of the sequences that the LSTM expects
         :param inputdata:
         :return:
         """

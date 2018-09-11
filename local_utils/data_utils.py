@@ -183,11 +183,12 @@ class TextFeatureWriter(FeatureIO):
                 features = tf.train.Features(feature={
                     'labels': self.int64_feature(labels[index]),
                     'images': self.bytes_feature(image),
-                    'imagenames': self.bytes_feature(imagenames[index])
+                    'imagenames': self.bytes_feature(imagenames[index]),
+                    'lengths': self.int64_feature(len(labels[index]))
                 })
                 example = tf.train.Example(features=features)
                 writer.write(example.SerializeToString())
-                sys.stdout.write('\r>>Writing {:d}/{:d} {:s} tfrecords'.format(index+1, len(images), imagenames[index]))
+                sys.stdout.write('\r>>Writing {:d}/{:d} {:<60} tfrecords'.format(index+1, len(images), imagenames[index]))
                 sys.stdout.flush()
             sys.stdout.write('\n')
             sys.stdout.flush()
@@ -223,6 +224,7 @@ class TextFeatureReader(FeatureIO):
                                                'images': tf.FixedLenFeature((), tf.string),
                                                'imagenames': tf.FixedLenFeature([1], tf.string),
                                                'labels': tf.VarLenFeature(tf.int64),
+                                               'lengths': tf.FixedLenFeature((), tf.int64)
                                            })
         image = tf.decode_raw(features['images'], tf.uint8)
         w, h = input_size
@@ -230,7 +232,8 @@ class TextFeatureReader(FeatureIO):
         labels = features['labels']
         labels = tf.cast(labels, tf.int32)
         imagenames = features['imagenames']
-        return images, labels, imagenames
+        label_lengths = features['lengths']
+        return images, labels, label_lengths, imagenames
 
 
 class TextFeatureIO(object):

@@ -14,7 +14,6 @@ from typing import Tuple
 import tensorflow as tf
 import os.path as ops
 import time
-import numpy as np
 import argparse
 from easydict import EasyDict
 
@@ -72,11 +71,11 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
     # decode the tf records to get the training data
     decoder = data_utils.TextFeatureIO(char_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'char_dict.json'),
                                        ord_map_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'ord_map.json')).reader
-    images, labels, imagenames = decoder.read_features(ops.join(cfg.PATH.TFRECORDS_DIR, 'train_feature.tfrecords'),
+    images, labels, input_lengths, imagenames = decoder.read_features(ops.join(cfg.PATH.TFRECORDS_DIR, 'train_feature.tfrecords'),
                                                        num_epochs=None, input_size=cfg.ARCH.INPUT_SIZE,
                                                        input_channels=cfg.ARCH.INPUT_CHANNELS)
-    inputdata, input_labels, input_imagenames = tf.train.shuffle_batch(
-        tensors=[images, labels, imagenames], batch_size=cfg.TRAIN.BATCH_SIZE,
+    inputdata, input_labels, input_lengths, input_imagenames = tf.train.shuffle_batch(
+        tensors=[images, labels, lengths, imagenames], batch_size=cfg.TRAIN.BATCH_SIZE,
         capacity=1000 + 2*cfg.TRAIN.BATCH_SIZE, min_after_dequeue=100, num_threads=num_threads)
 
     inputdata = tf.cast(x=inputdata, dtype=tf.float32)
@@ -90,12 +89,9 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
     with tf.variable_scope('shadow', reuse=False):
         net_out = shadownet.build_shadownet(inputdata=inputdata)
 
-    cost = tf.reduce_mean(tf.nn.ctc_loss(labels=input_labels, inputs=net_out,
-                                         sequence_length=cfg.ARCH.SEQ_LENGTH*np.ones(cfg.TRAIN.BATCH_SIZE)))
+    cost = tf.reduce_mean(tf.nn.ctc_loss(labels=input_labels, inputs=net_out, sequence_length=input_lengths))
 
-    decoded, log_prob = tf.nn.ctc_beam_search_decoder(net_out,
-                                                      cfg.ARCH.SEQ_LENGTH*np.ones(cfg.TRAIN.BATCH_SIZE),
-                                                      merge_repeated=False)
+    decoded, log_prob = tf.nn.ctc_beam_search_decoder(net_out, sequence_length=input_lengths, merge_repeated=False)
 
     sequence_dist = tf.reduce_mean(tf.edit_distance(tf.cast(decoded[0], tf.int32), input_labels))
 
@@ -151,8 +147,8 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
 
         for epoch in range(train_epochs):
             if decode:
-                _, c, seq_distance, predictions, labels, summary = sess.run(
-                    [optimizer, cost, sequence_dist, decoded, input_labels, merge_summary_op])
+                _, c, seq_distance, predictions, labels, lengths, summary = sess.run(
+                    [optimizer, cost, sequence_dist, decoded, input_labels, input_lengths, merge_summary_op])
 
                 labels = decoder.sparse_tensor_to_str(labels)
                 predictions = decoder.sparse_tensor_to_str(predictions[0])
