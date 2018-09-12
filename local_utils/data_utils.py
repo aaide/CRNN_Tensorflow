@@ -8,7 +8,7 @@
 """
 Implement some utils used to convert image and it's corresponding label into tfrecords
 """
-from typing import List, Tuple
+from typing import List, Tuple, Iterable
 
 import numpy as np
 import tensorflow as tf
@@ -113,11 +113,11 @@ class FeatureIO(object):
         else:
             return self.__char_dict[str(number)]
 
-    def encode_labels(self, labels) -> Tuple[List[List[int]], List[int]]:
-        """
-            encode the labels for ctc loss
+    def encode_labels(self, labels: Iterable[str]) -> Tuple[List[List[int]], List[int]]:
+        """ Encode the labels for ctc loss.
+
         :param labels:
-        :return:
+        :return: labels encoded with `char_to_int()` and their lengths
         """
         encoded_labels = []
         lengths = []
@@ -161,21 +161,23 @@ class TextFeatureWriter(FeatureIO):
         super(TextFeatureWriter, self).__init__(char_dict_path, ord_map_dict_path)
         return
 
-    def write_features(self, tfrecords_path, labels, images, imagenames):
+    def write_features(self, tfrecords_path: str, labels: List[str], images: List[bytes], imagenames: List[str]):
         """
 
         :param tfrecords_path:
         :param labels:
         :param images:
         :param imagenames:
-        :return:
         """
         assert len(labels) == len(images) == len(imagenames)
 
-        labels, length = self.encode_labels(labels)
+        # Trick to pad the status messages
+        index_display_width = 1 + int(np.ceil(np.log10(len(images)+1)))
+        names_display_width = 1 + max(len(s) for s in imagenames)
 
-        if not ops.exists(ops.split(tfrecords_path)[0]):
-            os.makedirs(ops.split(tfrecords_path)[0])
+        labels, lengths = self.encode_labels(labels)
+
+        os.makedirs(ops.split(tfrecords_path)[0], exist_ok=True)
 
         with tf.python_io.TFRecordWriter(tfrecords_path) as writer:
             for index, image in enumerate(images):
@@ -183,15 +185,14 @@ class TextFeatureWriter(FeatureIO):
                     'labels': self.int64_feature(labels[index]),
                     'images': self.bytes_feature(image),
                     'imagenames': self.bytes_feature(imagenames[index]),
-                    'lengths': self.int64_feature(len(labels[index]))
+                    'lengths': self.int64_feature(lengths[index])
                 })
                 example = tf.train.Example(features=features)
                 writer.write(example.SerializeToString())
-                sys.stdout.write('\r>>Writing {:d}/{:d} {:<60} tfrecords'.format(index+1, len(images), imagenames[index]))
-                sys.stdout.flush()
-            sys.stdout.write('\n')
-            sys.stdout.flush()
-        return
+                print('\r>>Writing tfrecords {:>{}d}/{:d} {:>{}}'.format(index+1, index_display_width, len(images),
+                                                                         imagenames[index], names_display_width),
+                      flush=True)
+        print(flush=True)
 
 
 class TextFeatureReader(FeatureIO):
