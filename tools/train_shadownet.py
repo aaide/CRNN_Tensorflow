@@ -71,12 +71,12 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
     # decode the tf records to get the training data
     decoder = data_utils.TextFeatureIO(char_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'char_dict.json'),
                                        ord_map_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'ord_map.json')).reader
-    images, labels, input_lengths, imagenames = decoder.read_features(ops.join(cfg.PATH.TFRECORDS_DIR, 'train_feature.tfrecords'),
-                                                       num_epochs=None, input_size=cfg.ARCH.INPUT_SIZE,
-                                                       input_channels=cfg.ARCH.INPUT_CHANNELS)
-    inputdata, input_labels, input_lengths, input_imagenames = tf.train.shuffle_batch(
-        tensors=[images, labels, lengths, imagenames], batch_size=cfg.TRAIN.BATCH_SIZE,
-        capacity=1000 + 2*cfg.TRAIN.BATCH_SIZE, min_after_dequeue=100, num_threads=num_threads)
+    images, labels, lengths, imagenames = \
+        decoder.read_features(ops.join(cfg.PATH.TFRECORDS_DIR, 'train_feature.tfrecords'),
+                              num_epochs=None, input_size=cfg.ARCH.INPUT_SIZE, input_channels=cfg.ARCH.INPUT_CHANNELS)
+    inputdata, input_labels, input_lengths, input_imagenames = \
+        tf.train.shuffle_batch(tensors=[images, labels, lengths, imagenames], batch_size=cfg.TRAIN.BATCH_SIZE,
+                               capacity=1000 + 2 * cfg.TRAIN.BATCH_SIZE, min_after_dequeue=100, num_threads=num_threads)
 
     inputdata = tf.cast(x=inputdata, dtype=tf.float32)
 
