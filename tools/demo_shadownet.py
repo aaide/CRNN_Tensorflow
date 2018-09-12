@@ -47,12 +47,16 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     parser.add_argument('-n', '--num_classes', type=int, default=37,
                         help='Force number of character classes to this number. '
                              'Set to 0 for auto (read from charset_dir)')
+    parser.add_argument('-l', '--seq_length', type=int, default=32,
+                        help='Expect a sequence of at most this length')
 
     args = parser.parse_args()
 
     config = load_config(args.config_file)
     if args.chardict_dir:
         config.cfg.PATH.CHAR_DICT_DIR = args.chardict_dir
+    if args.seq_length:
+        config.cfg.ARCH.SEQ_LENGTH = args.seq_length
 
     return args, config.cfg
 
@@ -73,6 +77,7 @@ def recognize(image_path: str, weights_path: str, cfg: EasyDict, is_vis: bool=Tr
 
     w, h = cfg.ARCH.INPUT_SIZE
     inputdata = tf.placeholder(dtype=tf.float32, shape=[1, h, w, cfg.ARCH.INPUT_CHANNELS], name='input')
+    input_length = tf.placeholder(dtype=tf.float32, shape=[1], name='length')
 
     codec = data_utils.TextFeatureIO(char_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'char_dict.json'),
                                      ord_map_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'ord_map.json'))
@@ -85,7 +90,7 @@ def recognize(image_path: str, weights_path: str, cfg: EasyDict, is_vis: bool=Tr
                                num_classes=num_classes)
 
     with tf.variable_scope('shadow'):
-        net_out = net.build_shadownet(inputdata=inputdata)
+        net_out = net.build_shadownet(inputdata=inputdata, input_lengths=input_length)
 
     decodes, _ = tf.nn.ctc_beam_search_decoder(inputs=net_out, sequence_length=cfg.ARCH.SEQ_LENGTH*np.ones(1),
                                                merge_repeated=False)
@@ -104,7 +109,7 @@ def recognize(image_path: str, weights_path: str, cfg: EasyDict, is_vis: bool=Tr
 
         saver.restore(sess=sess, save_path=weights_path)
 
-        preds = sess.run(decodes, feed_dict={inputdata: image})
+        preds = sess.run(decodes, feed_dict={inputdata: image, input_length: cfg.ARCH.SEQ_LENGTH})
 
         preds = codec.writer.sparse_tensor_to_str(preds[0])
 

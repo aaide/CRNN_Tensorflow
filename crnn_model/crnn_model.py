@@ -111,7 +111,7 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
         assert shape[1] == 1  # H of the feature map must equal to 1
         return self.squeeze(inputdata=inputdata, axis=1)
 
-    def __sequence_label(self, inputdata: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+    def __sequence_label(self, inputdata: tf.Tensor, input_lengths: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
         """ Implements the sequence label part of the network
 
         :param inputdata:
@@ -125,6 +125,7 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
             bw_cell_list = [rnn.BasicLSTMCell(nh, forget_bias=1.0) for nh in [self.__hidden_nums]*self.__layers_nums]
 
             stack_lstm_layer, _, _ = rnn.stack_bidirectional_dynamic_rnn(fw_cell_list, bw_cell_list, inputdata,
+                                                                         sequence_length=input_lengths,
                                                                          dtype=tf.float32)
 
             if self.phase.lower() == 'train':
@@ -147,10 +148,11 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
 
         return rnn_out, raw_pred
 
-    def build_shadownet(self, inputdata: tf.Tensor) -> tf.Tensor:
+    def build_shadownet(self, inputdata: tf.Tensor, input_lengths: tf.Tensor) -> tf.Tensor:
         """ Main routine to construct the network
 
         :param inputdata:
+        :param input_lengths: Vector of length batch_size with sequence lengths
         :return:
         """
         # first apply the cnn feature extraction stage
@@ -160,6 +162,6 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
         sequence = self.__map_to_sequence(inputdata=cnn_out)
 
         # third apply the sequence label stage
-        net_out, raw_pred = self.__sequence_label(inputdata=sequence)
+        net_out, raw_pred = self.__sequence_label(inputdata=sequence, input_lengths=input_lengths)
 
         return net_out

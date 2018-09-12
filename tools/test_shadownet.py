@@ -99,7 +99,7 @@ def test_shadownet(weights_path: str, cfg: EasyDict, visualize: bool, process_al
                                num_classes=num_classes)
 
     with tf.variable_scope('shadow'):
-        net_out = net.build_shadownet(inputdata=images_sh)
+        net_out = net.build_shadownet(inputdata=images_sh, input_lengths=lengths_sh)
 
     decoded, _ = tf.nn.ctc_beam_search_decoder(net_out, sequence_length=lengths_sh, merge_repeated=False)
 

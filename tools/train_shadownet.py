@@ -87,7 +87,7 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
                                      num_classes=len(decoder.char_dict)+1)
 
     with tf.variable_scope('shadow', reuse=False):
-        net_out = shadownet.build_shadownet(inputdata=inputdata)
+        net_out = shadownet.build_shadownet(inputdata=inputdata, input_lengths=input_lengths)
 
     cost = tf.reduce_mean(tf.nn.ctc_loss(labels=input_labels, inputs=net_out, sequence_length=input_lengths))
 
