@@ -16,7 +16,6 @@ import os
 import os.path as ops
 import sys
 
-from global_configuration import config
 from local_utils import establish_char_dict
 
 
@@ -229,10 +228,9 @@ class TextFeatureReader(FeatureIO):
         image = tf.decode_raw(features['images'], tf.uint8)
         w, h = input_size
         images = tf.reshape(image, [h, w, input_channels])
-        labels = features['labels']
-        labels = tf.cast(labels, tf.int32)
+        labels = tf.cast(features['labels'], tf.int32)
+        label_lengths = tf.cast(features['lengths'], tf.int32)
         imagenames = features['imagenames']
-        label_lengths = features['lengths']
         return images, labels, label_lengths, imagenames
 
 
