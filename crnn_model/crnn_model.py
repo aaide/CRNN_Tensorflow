@@ -62,7 +62,7 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
 
         :param inputdata: 4D tensor batch x width x height x channels
         :param out_dims: number of output channels / filters
-        :return: the maxpooled output of the stage
+        :return: the maxpooled output of the stage (new width = width / 2, new height = height / 2)
         """
         conv = self.conv2d(inputdata=inputdata, out_channel=out_dims, kernel_size=3, stride=1, use_bias=False, name=name)
         relu = self.relu(inputdata=conv)
@@ -103,7 +103,7 @@ class ShadowNet(cnn_basenet.CNNBaseModel):
         """ Implements the map to sequence part of the network.
 
         This is used to convert the CNN feature map to the sequence used in the stacked LSTM layers later on.
-        Note that this determines the length of the sequences that the LSTM expects
+        Note that this determines the maximum length of the sequences that the LSTM
         :param inputdata:
         :return:
         """
