@@ -21,7 +21,10 @@ __C.ARCH = edict()
 __C.ARCH.HIDDEN_UNITS = 256
 # Number of stacked LSTM cells
 __C.ARCH.HIDDEN_LAYERS = 2
-# Maximal sequence length (unused! except in demo mode)
+# Maximal sequence length for CTC loss.
+# This is the max length of predictions, at most input width / 4. Labels cannot be longer than this number because of
+# how CTC works (many to one assignment of prediction entries to label entries)
+# (unused except in demo mode)
 __C.ARCH.SEQ_LENGTH = 25
 # Width x height into which training / testing images are resized before feeding into the network
 __C.ARCH.INPUT_SIZE = (100, 32)
