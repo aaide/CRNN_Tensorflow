@@ -68,7 +68,7 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     if args.max_hyper_evals:
         config.cfg.HYPERTUNE.MAX_EVALS = args.max_hyper_evals
     if args.mongo:
-        config.cfg.HYPERTUNE.MONGODB = args.mongodb
+        config.cfg.HYPERTUNE.MONGODB = args.mongo
     if args.exp_key:
         config.cfg.HYPERTUNE.EXP_KEY = args.exp_key
 
