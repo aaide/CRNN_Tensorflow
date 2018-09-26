@@ -52,7 +52,7 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
                         help='Number of threads to use in batch shuffling')
     parser.add_argument('-x', '--max-hyper-evals', type=int, help="Number of hyperparameter evaluations for hyperopt")
     parser.add_argument('-o', '--mongo', type=str, help="Full URI to MongoDB instance to hold experiments."
-                                                        " E.g. mongo://172.17.0.12:27017/simple-cnn")
+                                                        " E.g. mongo://127.0.0.1:27017/hyperopt")
     parser.add_argument('-k', '--exp-key', type=str, help="Key (identifier) to store this experiment in the MongoDB")
 
     args = parser.parse_args()
