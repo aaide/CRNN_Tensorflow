@@ -76,6 +76,8 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     if args.exp_key:
         config.cfg.HYPERTUNE.EXP_KEY = args.exp_key
         config.cfg.HYPERTUNE.ENABLE = True
+        if not args.model_dir:
+            config.cfg.PATH.MODEL_SAVE_DIR = os.path.join(cfg.PATH.MODEL_SAVE_DIR, args.exp_key)
 
     return args, config.cfg
 
@@ -256,8 +258,6 @@ if __name__ == '__main__':
     if cfg.HYPERTUNE.ENABLE:
         if cfg.HYPERTUNE.MONGODB:
             assert args.exp_key, "Experiment key required for MongoTrials"
-
-            cfg.PATH.MODEL_SAVE_DIR = os.path.join(cfg.PATH.MODEL_SAVE_DIR, args.exp_key)
             mongodb = args.mongo.strip("/") + "/jobs"
             trials = MongoTrials(mongodb, exp_key=args.exp_key)
             # This will block. Remember to start hyperopt-mongo-worker or use
