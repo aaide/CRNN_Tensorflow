@@ -75,21 +75,25 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     return args, config.cfg
 
 
-def create_objective(config: EasyDict, num_threads: int=2):
+def create_objective(cfg: EasyDict, num_threads: int=2):
     """ Constructs an objective function for hyperopt. """
 
     def objective(params):
-
-        # 1. update config with params
-
-        # 2. Train
+        cfg.ARCH.HIDDEN_UNITS = params['hidden_units']
+        cfg.ARCH.HIDDEN_LAYERS = params['hidden_layers']
+        cfg.TRAIN.BATCH_SIZE = params['batch_size']
+        cfg.TRAIN.LEARNING_RATE = params['learning_rate']
+        cfg.TRAIN.LR_DECAY_STEPS = params['lr_decay_steps']
+        cfg.TRAIN.LR_DECAY_RATE = params['lr_decay_rate']
+        cfg.TRAIN.LR_STAIRCASE = params['lr_staircase']
+        cfg.TRAIN.MOMENTUM = params['momentum']
 
         try:
             out = train_shadownet(cfg, decode=False, num_threads=num_threads)
         except:
-            return {'status': STATUS_FAIL, 'config': config}
+            return {'status': STATUS_FAIL, 'config': cfg}
         return {'status': STATUS_OK,
-                'config': config,
+                'config': cfg,
                 'loss': np.min(out)}  # TODO: check this
 
     return objective
@@ -243,7 +247,7 @@ if __name__ == '__main__':
     args, cfg = init_args()
 
     # Just a test
-    space = {
+    search_space = {
         'hidden_units': hp.choice('hidden_units', [256, 512, 768, 1024]),
         'hidden_layers': hp.randint('hidden_layers', 2, 6),
         'batch_size': hp.choice('batch_size', [32, 64, 128, 256, 512]),
@@ -263,10 +267,10 @@ if __name__ == '__main__':
             trials = MongoTrials(mongodb, exp_key=args.exp_key)
             # This will block. Remember to start hyperopt-mongo-worker or use
             # tools/mongo-worker.py
-            hyper_tune(cfg, space, trials)
+            hyper_tune(cfg, search_space, trials)
         else:
             trials = Trials()
-            hyper_tune(cfg, space, trials)
+            hyper_tune(cfg, search_space, trials)
             with open(os.path.join(cfg.PATH.MODEL_SAVE_DIR, 'tpe_trials.p', 'wb')) as fd:
                 pickle.dump(trials, fd, protocol=4)
     else:
