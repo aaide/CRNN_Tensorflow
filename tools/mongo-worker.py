@@ -3,6 +3,7 @@
 # We need to import all modules required when running the jobs in the mongo db
 import sys
 import os
+import traceback
 import pickle
 from typing import Tuple, Union
 
