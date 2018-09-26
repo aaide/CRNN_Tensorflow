@@ -10,6 +10,7 @@ Train shadow net script
 """
 import os
 import pickle
+import traceback
 from typing import Tuple, Union
 
 import tensorflow as tf
@@ -95,7 +96,7 @@ def create_objective(cfg: EasyDict, num_threads: int=2):
         try:
             out = train_shadownet(cfg, decode=False, num_threads=num_threads)
         except:
-            return {'status': STATUS_FAIL, 'config': cfg}
+            return {'status': STATUS_FAIL, 'config': cfg, 'exception': traceback.format_exc()}
         return {'status': STATUS_OK,
                 'config': cfg,
                 'loss': np.min(out)}  # TODO: check this
