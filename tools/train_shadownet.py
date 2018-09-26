@@ -101,7 +101,8 @@ def create_objective(cfg: EasyDict, num_threads: int=2):
             return {'status': STATUS_FAIL, 'config': cfg, 'exception': traceback.format_exc()}
         return {'status': STATUS_OK,
                 'config': cfg,
-                'loss': np.min(out)}  # TODO: check this
+                'epochs': out.size,
+                'cost': np.min(out)}  # TODO: check this
 
     return objective
 
