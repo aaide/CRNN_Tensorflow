@@ -67,7 +67,7 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
         config.cfg.PATH.TBOARD_SAVE_DIR = args.tboard_dir
     if args.max_hyper_evals:
         config.cfg.HYPERTUNE.MAX_EVALS = args.max_hyper_evals
-    if args.mongodb:
+    if args.mongo:
         config.cfg.HYPERTUNE.MONGODB = args.mongodb
     if args.exp_key:
         config.cfg.HYPERTUNE.EXP_KEY = args.exp_key
