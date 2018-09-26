@@ -34,23 +34,23 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     :return: parsed arguments and (updated) config.cfg object
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--dataset_dir', type=str,
+    parser.add_argument('-d', '--dataset-dir', type=str,
                         help='Directory containing train_features.tfrecords')
-    parser.add_argument('-c', '--chardict_dir', type=str,
+    parser.add_argument('-c', '--chardict-dir', type=str,
                         help='Directory where character dictionaries for the dataset were stored')
-    parser.add_argument('-m', '--model_dir', type=str,
+    parser.add_argument('-m', '--model-dir', type=str,
                         help='Directory where to store model checkpoints')
-    parser.add_argument('-t', '--tboard_dir', type=str,
+    parser.add_argument('-t', '--tboard-dir', type=str,
                         help='Directory where to store TensorBoard logs')
-    parser.add_argument('-f', '--config_file', type=str,
+    parser.add_argument('-f', '--config-file', type=str,
                         help='Use this global configuration file')
-    parser.add_argument('-e', '--decode_outputs', action='store_true', default=False,
+    parser.add_argument('-e', '--decode-outputs', action='store_true', default=False,
                         help='Activate decoding of predictions during training (slow!)')
-    parser.add_argument('-w', '--weights_path', type=str, help='Path to pre-trained weights to continue training')
-    parser.add_argument('-j', '--num_threads', type=int, default=int(os.cpu_count()/2),
+    parser.add_argument('-w', '--weights-path', type=str, help='Path to pre-trained weights to continue training')
+    parser.add_argument('-j', '--num-threads', type=int, default=int(os.cpu_count()/2),
                         help='Number of threads to use in batch shuffling')
     parser.add_argument('-x', '--max-hyper-evals', type=int, help="Number of hyperparameter evaluations for hyperopt")
-    parser.add_argument('-o', '--mongodb', type=str, help="Full URI to MongoDB instance to hold experiments."
+    parser.add_argument('-o', '--mongo', type=str, help="Full URI to MongoDB instance to hold experiments."
                                                         " E.g. mongo://172.17.0.12:27017/simple-cnn")
     parser.add_argument('-k', '--exp-key', type=str, help="Key (identifier) to store this experiment in the MongoDB")
 
