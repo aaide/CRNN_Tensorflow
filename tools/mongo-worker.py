@@ -22,6 +22,4 @@ from local_utils import data_utils, log_utils
 from local_utils.log_utils import compute_accuracy
 from local_utils.config_utils import load_config
 
-logger = log_utils.init_logger()
-
 sys.exit(main_worker())
