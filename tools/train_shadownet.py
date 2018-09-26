@@ -20,6 +20,7 @@ import argparse
 from easydict import EasyDict
 from hyperopt import hp, fmin, Trials, STATUS_FAIL, STATUS_OK, tpe, rand
 from hyperopt.mongoexp import MongoTrials
+from hyperopt.pyll import scope
 
 from crnn_model import crnn_model
 from local_utils import data_utils, log_utils
@@ -242,7 +243,7 @@ if __name__ == '__main__':
     # Just a test
     search_space = {
         'hidden_units': hp.choice('hidden_units', [256, 512, 768, 1024]),
-        'hidden_layers': hp.randint('hidden_layers', 2, 6),
+        'hidden_layers': scope.int(hp.quniform('hidden_layers', 2, 6, 1)),
         'batch_size': hp.choice('batch_size', [32, 64, 128, 256, 512]),
         'learning_rate': hp.loguniform('learning_rate', 0, 1) / 10.0,
         'lr_decay_steps': hp.choice('lr_decay_steps', [10, 20, 50, 100]),
