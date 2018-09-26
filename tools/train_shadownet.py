@@ -18,7 +18,7 @@ import time
 import numpy as np
 import argparse
 from easydict import EasyDict
-from hyperopt import fmin, Trials, STATUS_FAIL, STATUS_OK, tpe, rand
+from hyperopt import hp, fmin, Trials, STATUS_FAIL, STATUS_OK, tpe, rand
 from hyperopt.mongoexp import MongoTrials
 
 from crnn_model import crnn_model
@@ -242,7 +242,17 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
 if __name__ == '__main__':
     args, cfg = init_args()
 
-    space = {}  # TODO
+    # Just a test
+    space = {
+        'hidden_units': hp.choice('hidden_units', [256, 512, 768, 1024]),
+        'hidden_layers': hp.randint('hidden_layers', 2, 6),
+        'batch_size': hp.choice('batch_size', [32, 64, 128, 256, 512]),
+        'learning_rate': hp.loguniform('learning_rate', 0, 1) / 10.0,
+        'lr_decay_steps': hp.choice('lr_decay_steps', [10, 20, 50, 100]),
+        'lr_decay_rate': hp.loguniform('lr_decay_rate', 0, 1) / 10.0,
+        'lr_staircase': hp.choice('lr_staircase', [False, True]),
+        'momentum': 1 - hp.loguniform('momentum', 0, 1) / 10.0
+        }
 
     if cfg.HYPERTUNE.ENABLE:
         if cfg.HYPERTUNE.MONGODB:
