@@ -245,11 +245,11 @@ if __name__ == '__main__':
         'hidden_units': hp.choice('hidden_units', [256, 512, 768, 1024]),
         'hidden_layers': scope.int(hp.quniform('hidden_layers', 2, 6, 1)),
         'batch_size': hp.choice('batch_size', [32, 64, 128, 256, 512]),
-        'learning_rate': hp.loguniform('learning_rate', 0, 1) / 10.0,
+        'learning_rate': hp.loguniform('learning_rate', np.log(0.01), np.log(1)),
         'lr_decay_steps': hp.choice('lr_decay_steps', [10, 20, 50, 100]),
         'lr_decay_rate': hp.loguniform('lr_decay_rate', 0, 1) / 10.0,
         'lr_staircase': hp.choice('lr_staircase', [False, True]),
-        'momentum': 1 - hp.loguniform('momentum', 0, 1) / 10.0
+        'momentum': hp.loguniform('momentum', np.log(0.5), np.log(1))
         }
 
     if cfg.HYPERTUNE.ENABLE:
