@@ -4,3 +4,4 @@ matplotlib==2.2.2
 easydict==1.6
 jupyterlab>=0.32
 hyperopt==0.1.1
+dill=0.2.8.2
