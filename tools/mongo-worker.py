@@ -4,6 +4,7 @@
 import sys
 import os
 import traceback
+from tools.train_shadownet import train_shadownet
 import pickle
 from typing import Tuple, Union
 
