@@ -63,6 +63,12 @@ __C.TRAIN.LR_DECAY_RATE = 0.1
 # Update learning rate in jumps?
 __C.TRAIN.LR_STAIRCASE = False
 
+# Hyperparameter tuning options
+__C.HYPERTUNE.ENABLE = False
+# None to disable, otherwise: mongodb://ip:port
+__C.HYPERTUNE.MONGODB = None
+
+
 # Test options
 __C.TEST = edict()
 

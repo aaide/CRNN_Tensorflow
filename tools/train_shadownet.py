@@ -9,7 +9,8 @@
 Train shadow net script
 """
 import os
-from typing import Tuple
+import pickle
+from typing import Tuple, Union
 
 import tensorflow as tf
 import os.path as ops
@@ -17,6 +18,8 @@ import time
 import numpy as np
 import argparse
 from easydict import EasyDict
+from hyperopt import fmin, Trials, STATUS_FAIL, STATUS_OK, tpe, rand
+from hyperopt.mongoexp import MongoTrials
 
 from crnn_model import crnn_model
 from local_utils import data_utils, log_utils
@@ -62,12 +65,49 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     return args, config.cfg
 
 
-def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, num_threads: int=4) -> np.array:
+def create_objective(config: EasyDict, num_threads: int=2):
+    """ Constructs an objective function for hyperopt. """
+
+    def objective(params):
+
+        # 1. update config with params
+
+        # 2. Train
+
+        try:
+            out = train_shadownet(cfg, decode=False, num_threads=num_threads)
+        except:
+            return {'status': STATUS_FAIL, 'config': config}
+        return {'status': STATUS_OK,
+                'config': config,
+                'loss': np.min(out)}  # TODO: check this
+
+    return objective
+
+
+def hyper_tune(configuration: EasyDict, space: dict, trials: Union[Trials, MongoTrials]) -> dict:
+    """ Turn up the bass and get schwifty!
+
+    :param configuration: config dict
+    :param space:
+    :param trials:
+
+    """
+    obj = create_objective(configuration)
+
+    algo = {'tpe': tpe.suggest, 'random': rand.suggest}[configuration.HYPERTUNE.ALGORITHM]
+    best = fmin(obj, space=space, algo=algo, trials=trials, max_evals=configuration.HYPERTUNE.MAX_EVALS)
+    return best
+
+
+def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, num_threads: int=4, save: bool=True) \
+        -> np.array:
     """
     :param cfg: configuration EasyDict (e.g. global_config.config.cfg)
     :param weights_path: Path to stored weights
     :param decode: Whether to perform CTC decoding to report progress during training
     :param num_threads: Number of threads to use in tf.train.shuffle_batch
+    :param save: Whether to save model checkpoints at each epoch
     :return History of values of the cost function
     """
     # decode the tf records to get the training data
@@ -183,7 +223,8 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
 
             cost_history.append(c)
             summary_writer.add_summary(summary=summary, global_step=epoch)
-            saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
+            if save:
+                saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
 
         return np.array(cost_history[1:])  # Don't return the first np.inf
 
@@ -191,6 +232,24 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
 if __name__ == '__main__':
     args, cfg = init_args()
 
-    train_shadownet(cfg=cfg, weights_path=args.weights_path, decode=args.decode_outputs,
-                    num_threads=args.num_threads)
+    space = {}  # TODO
+
+    if cfg.HYPERTUNE.ENABLE:
+        if cfg.HYPERTUNE.MONGODB:
+            assert args.exp_key, "Experiment key required for MongoTrials"
+
+            cfg.PATH.MODEL_SAVE_DIR = os.path.join(cfg.PATH.MODEL_SAVE_DIR, args.exp_key)
+            mongodb = args.mongo.strip("/") + "/jobs"
+            trials = MongoTrials(mongodb, exp_key=args.exp_key)
+            # This will block. Remember to start hyperopt-mongo-worker or use
+            # tools/mongo-worker.py
+            hyper_tune(cfg, space, trials)
+        else:
+            trials = Trials()
+            hyper_tune(cfg, space, trials)
+            with open(os.path.join(cfg.PATH.MODEL_SAVE_DIR, 'tpe_trials.p', 'wb')) as fd:
+                pickle.dump(trials, fd, protocol=4)
+    else:
+        train_shadownet(cfg=cfg, weights_path=args.weights_path, decode=args.decode_outputs,
+                        num_threads=args.num_threads)
     print('Done')
