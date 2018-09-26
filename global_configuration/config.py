@@ -65,9 +65,14 @@ __C.TRAIN.LR_STAIRCASE = False
 
 # Hyperparameter tuning options
 __C.HYPERTUNE.ENABLE = False
-# None to disable, otherwise: mongodb://ip:port
+# None to disable and save Trials as pickle, otherwise: mongodb://ip:port
 __C.HYPERTUNE.MONGODB = None
-
+# Experiment identifier to use for a hyperopt run (should be unique)
+__C.HYPERTUNE.EXP_KEY = 'shadownet'
+# Maximum number of evaluations of the objective function (accumulative if using mongodb)
+__C.HYPERTUNE.MAX_EVALS = 200
+# tpe or random
+__C.HYPERTUNE.ALGORITHM = 'tpe'
 
 # Test options
 __C.TEST = edict()

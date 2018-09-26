@@ -49,6 +49,10 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
     parser.add_argument('-w', '--weights_path', type=str, help='Path to pre-trained weights to continue training')
     parser.add_argument('-j', '--num_threads', type=int, default=int(os.cpu_count()/2),
                         help='Number of threads to use in batch shuffling')
+    parser.add_argument('-x', '--max-hyper-evals', type=int, help="Number of hyperparameter evaluations for hyperopt")
+    parser.add_argument('-o', '--mongodb', type=str, help="Full URI to MongoDB instance to hold experiments."
+                                                        " E.g. mongo://172.17.0.12:27017/simple-cnn")
+    parser.add_argument('-k', '--exp-key', type=str, help="Key (identifier) to store this experiment in the MongoDB")
 
     args = parser.parse_args()
 
@@ -61,6 +65,12 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
         config.cfg.PATH.MODEL_SAVE_DIR = args.model_dir
     if args.tboard_dir:
         config.cfg.PATH.TBOARD_SAVE_DIR = args.tboard_dir
+    if args.max_hyper_evals:
+        config.cfg.HYPERTUNE.MAX_EVALS = args.max_hyper_evals
+    if args.mongodb:
+        config.cfg.HYPERTUNE.MONGODB = args.mongodb
+    if args.exp_key:
+        config.cfg.HYPERTUNE.EXP_KEY = args.exp_key
 
     return args, config.cfg
 
@@ -85,18 +95,18 @@ def create_objective(config: EasyDict, num_threads: int=2):
     return objective
 
 
-def hyper_tune(configuration: EasyDict, space: dict, trials: Union[Trials, MongoTrials]) -> dict:
+def hyper_tune(cfg: EasyDict, space: dict, trials: Union[Trials, MongoTrials]) -> dict:
     """ Turn up the bass and get schwifty!
 
-    :param configuration: config dict
+    :param cfg: config dict
     :param space:
     :param trials:
 
     """
-    obj = create_objective(configuration)
+    obj = create_objective(cfg)
 
-    algo = {'tpe': tpe.suggest, 'random': rand.suggest}[configuration.HYPERTUNE.ALGORITHM]
-    best = fmin(obj, space=space, algo=algo, trials=trials, max_evals=configuration.HYPERTUNE.MAX_EVALS)
+    algo = {'tpe': tpe.suggest, 'random': rand.suggest}[cfg.HYPERTUNE.ALGORITHM]
+    best = fmin(obj, space=space, algo=algo, trials=trials, max_evals=cfg.HYPERTUNE.MAX_EVALS)
     return best
 
 
