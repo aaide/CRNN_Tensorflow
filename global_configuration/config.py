@@ -64,6 +64,8 @@ __C.TRAIN.LR_DECAY_RATE = 0.1
 __C.TRAIN.LR_STAIRCASE = False
 
 # Hyperparameter tuning options
+__C.HYPERTUNE = edict()
+
 __C.HYPERTUNE.ENABLE = False
 # None to disable and save Trials as pickle, otherwise: mongodb://ip:port
 __C.HYPERTUNE.MONGODB = None

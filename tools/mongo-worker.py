@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 # We need to import all modules required when running the jobs in the mongo db
 import sys
 import os
