@@ -11,6 +11,7 @@ Train shadow net script
 import os
 import pickle
 import traceback
+import uuid
 from typing import Tuple, Union
 
 import tensorflow as tf
@@ -78,6 +79,8 @@ def init_args() -> Tuple[argparse.Namespace, EasyDict]:
         config.cfg.HYPERTUNE.ENABLE = True
         if not args.model_dir:
             config.cfg.PATH.MODEL_SAVE_DIR = os.path.join(cfg.PATH.MODEL_SAVE_DIR, args.exp_key)
+        if not args.tboard_dir:
+            config.cfg.PATH.TBOARD_SAVE_DIR = os.path.join(cfg.PATH.TBOARD_SAVE_DIR, args.exp_key)
 
     return args, config.cfg
 
@@ -94,6 +97,9 @@ def create_objective(cfg: EasyDict, num_threads: int=2):
         cfg.TRAIN.LR_DECAY_RATE = params['lr_decay_rate']
         cfg.TRAIN.LR_STAIRCASE = params['lr_staircase']
         cfg.TRAIN.MOMENTUM = params['momentum']
+        id = uuid.uuid4().hex[:8]
+        cfg.PATH.MODEL_SAVE_DIR = os.path.join(cfg.PATH.MODEL_SAVE_DIR, id)
+        cfg.PATH.TBOARD_SAVE_DIR = os.path.join(cfg.PATH.TBOARD_SAVE_DIR, id)
 
         try:
             out = train_shadownet(cfg, decode=False, num_threads=num_threads)
