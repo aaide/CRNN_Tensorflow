@@ -3,6 +3,7 @@
 # We need to import all modules required when running the jobs in the mongo db
 import sys
 import os
+import uuid
 import traceback
 from tools.train_shadownet import train_shadownet
 import pickle
