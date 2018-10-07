@@ -182,6 +182,7 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
     merge_summary_op = tf.summary.merge_all()
 
     # Set saver configuration
+    os.makedirs(cfg.PATH.MODEL_SAVE_DIR, exist_ok=True)
     saver = tf.train.Saver()
     train_start_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
     model_name = 'shadownet_{:s}.ckpt'.format(str(train_start_time))
