@@ -138,6 +138,7 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
     :param save: Whether to save model checkpoints at each epoch
     :return History of values of the cost function
     """
+    tf.reset_default_graph()
     # decode the tf records to get the training data
     decoder = data_utils.TextFeatureIO(char_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'char_dict.json'),
                                        ord_map_dict_path=ops.join(cfg.PATH.CHAR_DICT_DIR, 'ord_map.json')).reader
@@ -182,7 +183,6 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
 
     # Set saver configuration
     saver = tf.train.Saver()
-    os.makedirs(cfg.PATH.TBOARD_SAVE_DIR, exist_ok=True)
     train_start_time = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
     model_name = 'shadownet_{:s}.ckpt'.format(str(train_start_time))
     model_save_path = ops.join(cfg.PATH.MODEL_SAVE_DIR, model_name)
