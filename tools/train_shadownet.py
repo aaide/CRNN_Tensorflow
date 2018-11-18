@@ -102,7 +102,7 @@ def create_objective(cfg: EasyDict, num_threads: int=2):
         cfg.PATH.TBOARD_SAVE_DIR = os.path.join(cfg.PATH.TBOARD_SAVE_DIR, id)
 
         try:
-            out = train_shadownet(cfg, decode=False, num_threads=num_threads)
+            out = train_shadownet(cfg, decode=False, num_threads=num_threads, save=False, save_last=True)
         except:
             return {'status': STATUS_FAIL, 'config': cfg, 'exception': traceback.format_exc()}
         return {'status': STATUS_OK,
@@ -128,7 +128,7 @@ def hyper_tune(cfg: EasyDict, space: dict, trials: Union[Trials, MongoTrials]) -
     return best
 
 
-def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, num_threads: int=4, save: bool=True) \
+def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, num_threads: int=4, save: bool=True, save_last: bool=True) \
         -> np.array:
     """
     :param cfg: configuration EasyDict (e.g. global_config.config.cfg)
@@ -244,7 +244,9 @@ def train_shadownet(cfg: EasyDict, weights_path: str=None, decode: bool=False, n
             summary_writer.add_summary(summary=summary, global_step=epoch)
             if save:
                 saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
-
+        if not save and save_last:
+            saver.save(sess=sess, save_path=model_save_path, global_step=epoch)
+            
         return np.array(cost_history[1:])  # Don't return the first np.inf
 
 
