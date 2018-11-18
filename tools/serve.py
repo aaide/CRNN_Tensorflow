@@ -60,7 +60,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--weights_path', type=str,
                         help='Path to the pre-trained weights to use',
-                        default='model/shadownet/shadownet_2017-09-29-19-16-33.ckpt-39999')
+                        default='model/shadownet/shadownet_2017-10-17-11-47-46.ckpt-199999.index')
     parser.add_argument('-f', '--config_file', type=str,
                         help='Use this global configuration file')
     parser.add_argument('-c', '--chardict_dir', type=str,
@@ -69,6 +69,11 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--num_classes', type=int, default=0,
                         help='Force number of character classes to this number.'
                              ' Set to 0 for auto (read from charset_dir)')
+    parser.add_argument('-p', '--port', type=int,
+                        default=os.getenv("FLASK_PORT", 7331),
+                        help='Port to listen on')
+    parser.add_argument('-s', '--host', type=str, default="0.0.0.0",
+                        help='Interface to bind to')
     args = parser.parse_args()
 
     config = load_config(args.config_file)
